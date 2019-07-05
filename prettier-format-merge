@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ $# -ne 4 ]; then
+  echo "usage: prettier-format-merge %O %A %B %P";
+  exit 1
+fi
+
+BASE="$1"
+OURS="$2"
+OTHERS="$3"
+REPO_PATH="$4"
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+echo "Merging $REPO_PATH in repo $ROOT"
+
+function format() {
+  echo "Formatting $1 as $REPO_PATH"
+  "$ROOT/mach" prettier-format -a "$REPO_PATH" -p "$1" > "$1.tmp"
+  if [ $? -ne 0 ]; then
+    # We let the thing keep going, this will end up in `git merge-file` and
+    # that will error out if there are conflicts.
+    echo "prettier-format failed, make sure you run ./mach eslint --fix manually at least once"
+    cat "$1.tmp"
+    rm "$1.tmp"
+  elif [ -s "$1.tmp" ]; then
+    mv "$1.tmp" "$1"
+  else
+    rm "$1.tmp"
+  fi
+}
+
+format "$BASE"
+format "$OURS"
+format "$OTHERS"
+
+git merge-file -Lcurrent -Lbase -Lothers "$OURS" "$BASE" "$OTHERS"
+exit $?
