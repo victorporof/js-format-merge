@@ -40,9 +40,9 @@ fi
 
 echo "wrapper> Adding .gitattributes" >&2
 cat >> .gitattributes <<EOF
-*.cpp merge=prettier-format
-*.h   merge=prettier-format
-*.mm  merge=prettier-format
+*.js  merge=prettier-format
+*.jsm merge=prettier-format
+*.jsx merge=prettier-format
 EOF
 R_GITATTRIBUTES=1
 
